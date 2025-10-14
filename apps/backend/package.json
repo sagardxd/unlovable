@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@e2b/code-interpreter": "^2.0.1",
+    "@openrouter/ai-sdk-provider": "^1.2.0",
+    "@types/express": "^5.0.3",
+    "ai": "^5.0.71",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
+  }
+}
