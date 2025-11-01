@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  User
+  Assistant
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  projects Project[]
+}
+
+model Project {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  sandboxId String
+  s3        String
+  createdAt DateTime @default(now())
+
+  user         User           @relation(fields: [userId], references: [id])
+  userId       Int
+  Conversation Conversation[]
+}
+
+model Conversation {
+  id       Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId Int  @unique 
+  messages Message[]
+}
+
+model Message {
+  id      Int   @id @default(autoincrement())
+  role     Role
+  content String
+  createdAt DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  conversationId Int
+}
