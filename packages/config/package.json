@@ -1,21 +1,19 @@
 {
-  "name": "backend",
+  "name": "@repo/config",
   "module": "index.ts",
   "type": "module",
   "private": true,
-  "scripts": {
-    "dev": "bun run --watch src/index.ts"
-  },
   "devDependencies": {
     "@types/bun": "latest"
+  },
+  "exports": {
+    ".": "./src/index.ts"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
-    "@types/express": "^5.0.5",
     "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "@repo/config": "workspace:*"
+    "zod": "^4.1.12"
   }
 }
