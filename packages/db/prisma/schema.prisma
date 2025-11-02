@@ -24,7 +24,7 @@
 
   model Project {
     id        String   @id @default(uuid())
-    sandboxId String
+    sandboxId String?
     slug      String
     s3        String? 
     createdAt DateTime @default(now())
