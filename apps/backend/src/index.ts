@@ -7,7 +7,7 @@ app.use(express.json());
 
 app.get("/", (_, res: Response) => {
     return res.json({message: "Unlovable is up!"})
-})
+})  
 
 app.use("/api/project", projectRouter);
 
