@@ -1,22 +1,27 @@
 import { Sandbox } from '@e2b/code-interpreter'
 import { config } from '@repo/config'
-import { redis } from './src/redis/index'
+import { redis } from '@repo/redis-store'
+import { RedisKeys } from '@repo/types'
 
 export class SandboxManager {
     private sandbox: Sandbox | null = null
     private sandboxExpoUrl: string | null = null
 
-    public init = async (userId: string) => {
-        const sandboxId = await redis.get(userId)
+    public init = async (projectId: string) => {
+        const sandboxId = await redis.get(projectId, RedisKeys.SANDBOX_ID)
 
         if (sandboxId) {
             this.sandbox = await Sandbox.connect(sandboxId);
-            return this.sandbox.sandboxId
+            this.sandboxExpoUrl = await redis.get(projectId, RedisKeys.SANDBOX_EXPO_URL)
+
+            return this.sandboxExpoUrl
         }
 
         this.sandbox = await Sandbox.create({ apiKey: config.E2B_API_KEY, timeoutMs: 30 * 60 * 1000, allowInternetAccess: true });
-        await redis.set(userId, this.sandbox.sandboxId)
-        return this.sandbox.sandboxId
+        this.sandboxExpoUrl = await this.runExpo();
+        await redis.set(projectId, RedisKeys.SANDBOX_ID, this.sandbox.sandboxId)
+        await redis.set(projectId, RedisKeys.SANDBOX_EXPO_URL, this.sandboxExpoUrl)
+        return this.sandboxExpoUrl
     }
 
     private ensureSandbox = () => {
@@ -47,6 +52,11 @@ export class SandboxManager {
             },
         })
         return this.sandboxExpoUrl;
+    }
+
+    public getChatHistory = async (projectId: string) => {
+        const history = await redis.get(projectId, RedisKeys.PROJECT_CHAT_HISTORY);
+        return history || [];
     }
 
     public writeFile = async (path: string, content: string) => {
