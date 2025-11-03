@@ -4,12 +4,22 @@ import { logger } from "../utils/logger";
 import { ErrorResponse, ServerErrorResponse } from "../utils/api.response";
 import { jwtSign } from "../utils/jwt";
 import { StatusCodes } from "http-status-codes";
-import { isHashedPassMatch } from "../utils/hashPass";
+import { hashPass, isHashedPassMatch } from "../utils/hashPass";
+import { userScehma } from "@repo/types";
 
 export const signUpController = async (req: Request, res: Response) => {
-    const { email, password } = req.body()
+    const parsed = userScehma.safeParse(req.body);
     try {
-        const user = await createUser(email, password);
+        if (!parsed.success) return ErrorResponse(res, StatusCodes.NOT_ACCEPTABLE, "Invalid inputs!")
+
+        const { email, password } = parsed.data;
+
+        const alreadyUser = await userExsists(email);
+        if (alreadyUser) return ErrorResponse(res, StatusCodes.CONFLICT, 'User already exsists!')
+
+        const hashedPass = await hashPass(password)
+
+        const user = await createUser(email, hashedPass);
         if (!user) return ErrorResponse(res, StatusCodes.UNAUTHORIZED, 'Error creating user')
 
         const token = jwtSign({ email: user.email, id: user.id })
@@ -30,8 +40,12 @@ export const signUpController = async (req: Request, res: Response) => {
 }
 
 export const signInController = async (req: Request, res: Response) => {
-    const { email, password } = req.body()
+    const parsed = userScehma.safeParse(req.body);
     try {
+        if (!parsed.success) return ErrorResponse(res, StatusCodes.NOT_ACCEPTABLE, "Invalid inputs!")
+
+        const { email, password } = parsed.data;
+
         const alreadyUser = await userExsists(email);
         if (!alreadyUser) return ErrorResponse(res, StatusCodes.NOT_FOUND, 'User not found')
 
@@ -39,7 +53,7 @@ export const signInController = async (req: Request, res: Response) => {
         if (!isMatch) return ErrorResponse(res, StatusCodes.UNAUTHORIZED, 'Wrong password')
 
         const token = jwtSign({ email: alreadyUser.email, id: alreadyUser.id })
-        
+
         return res.status(StatusCodes.OK).json({
             success: true,
             data: {

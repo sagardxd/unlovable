@@ -3,5 +3,6 @@ export enum QueueType {
 }
 
 export enum QueueJobType {   
-    PROJECT_CREATE = "PROJECT_CREATE"
+    PROJECT_CREATE = "PROJECT_CREATE",
+    PROJECT_CHAT = "PROJECT_CHAT"
 }

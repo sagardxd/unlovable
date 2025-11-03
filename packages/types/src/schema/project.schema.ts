@@ -5,4 +5,8 @@ export const createProjectScehma = z.object({
     prompt: z.string()
 })
 
+export const chatWithProjectSchema = z.object({
+    prompt: z.string()
+})
+
 export type CreateProjectType = z.infer<typeof createProjectScehma>
