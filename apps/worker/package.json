@@ -1,0 +1,21 @@
+{
+  "name": "worker",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --watch src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "bullmq": "^5.63.0",
+    "@repo/types": "workspace:*",
+    "@repo/agent": "workspace:*",
+    "@repo/e2b": "workspace:*"
+  }
+}
