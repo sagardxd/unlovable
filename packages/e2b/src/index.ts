@@ -2,6 +2,7 @@ import { Sandbox } from '@e2b/code-interpreter'
 import { config } from '@repo/config'
 import { redis } from '@repo/redis-store'
 import { RedisKeys } from '@repo/types'
+import axios from 'axios'
 
 export class SandboxManager {
     private sandbox: Sandbox | null = null
@@ -11,14 +12,16 @@ export class SandboxManager {
         const sandboxId = await redis.get(projectId, RedisKeys.SANDBOX_ID)
 
         if (sandboxId) {
+            console.log('sandbox is already live');
             this.sandbox = await Sandbox.connect(sandboxId);
             this.sandboxExpoUrl = await redis.get(projectId, RedisKeys.SANDBOX_EXPO_URL)
 
             return this.sandboxExpoUrl
         }
 
-        this.sandbox = await Sandbox.create({ apiKey: config.E2B_API_KEY, timeoutMs: 30 * 60 * 1000, allowInternetAccess: true });
-        this.sandboxExpoUrl = await this.runExpo();
+        this.sandbox = await Sandbox.create(config.TEMPLATE_ID, { apiKey: config.E2B_API_KEY, timeoutMs: 30 * 60 * 1000, allowInternetAccess: true });
+        this.sandboxExpoUrl = await this.fetchSandboxUrl()
+
         await redis.set(projectId, RedisKeys.SANDBOX_ID, this.sandbox.sandboxId)
         await redis.set(projectId, RedisKeys.SANDBOX_EXPO_URL, this.sandboxExpoUrl)
         return this.sandboxExpoUrl
@@ -28,30 +31,15 @@ export class SandboxManager {
         if (!this.sandbox) throw new Error("Sandbox not initialized. Call init() first.");
     }
 
-    public runExpo = async () => {
-        let tunnelUrl = "";
-        await this.sandbox!.commands.run("npx expo start --tunnel", {
-            background: true,
-            onStdout: (data) => {
-                const line = data.toString();
-
-                // Look for the exp:// URL
-                if (line.includes("Metro waiting on")) {
-                    const parts = line.split(" ");
-                    const url = parts.find(p => p.startsWith("exp://"));
-                    if (url) {
-                        tunnelUrl = url;
-                        this.sandboxExpoUrl = tunnelUrl
-                        console.log("Tunnel URL:", tunnelUrl);
-                    }
-                }
-            },
-            onStderr: (data) => {
-                console.log('errors are');
-                console.log(data.toString());
-            },
-        })
-        return this.sandboxExpoUrl;
+    public fetchSandboxUrl = async () => {
+        try {
+            const host = `https://8081-${this.sandbox?.sandboxId}.e2b.app`
+            const response = await axios.get(host);
+            const url = response.data.extra.expoGo.debuggerHost;
+            return url;
+        } catch (error) {
+            console.log('getSandboxUrl, error getting url', error);
+        }
     }
 
     public getChatHistory = async (projectId: string) => {

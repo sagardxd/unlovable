@@ -12,8 +12,9 @@
   "dependencies": {
     "@e2b/code-interpreter": "^2.2.0",
     "@repo/config": "workspace:*",
-    "@repo/types": "workspace:*",
     "@repo/redis-store": "workspace:*",
+    "@repo/types": "workspace:*",
+    "axios": "^1.13.1",
     "ioredis": "^5.8.2"
   },
   "exports": {
