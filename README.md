@@ -2,6 +2,10 @@
 
 AI-powered code execution platform built with Turborepo, Bun, and E2B for expo apps!
 
+## v0 architecture
+
+<img width="1088" height="684" alt="v0-unlovable" src="https://github.com/user-attachments/assets/9067f748-da91-43df-8e44-45439e394902" />
+
 ## Setup
 
 ```bash
